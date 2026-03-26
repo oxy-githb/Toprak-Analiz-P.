@@ -666,20 +666,8 @@ body {
   }
   .step-info { width: 100% !important; }
 
-  /* Tooltip — mobilde global sheet tarafından yönetilir, CSS gizle */
-  .chem-tooltip { display: none !important; }
+  /* mobilde tooltip CSS global sheet tarafından yönetilir */
   .chem-chip:hover .chem-tooltip { display: none !important; }
-
-  /* Tooltip arkasında karartma */
-  .tooltip-backdrop {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.55);
-    z-index: 9998;
-    backdrop-filter: blur(2px);
-  }
-  .tooltip-backdrop.active { display: block; }
 
 
   /* Tablolar scroll */
@@ -782,99 +770,100 @@ body {
   .main { padding-bottom: 70px; }
   /* Hide install banner when bottom-nav visible */
 }
-/* ─── GLOBAL MOBİL BOTTOM SHEET ─── */
-#globalSheet {
-  display: none;
+/* ════ MOBİL BOTTOM SHEET (TEMİZ VERSIYON) ════ */
+#mobSheet {
   position: fixed;
   left: 0; right: 0; bottom: 0;
   z-index: 99999;
   background: #1e2d1e;
-  border-radius: 22px 22px 0 0;
-  border-top: 2px solid #4a7a4a;
-  max-height: 80vh;
+  border-radius: 20px 20px 0 0;
+  border-top: 2.5px solid #4a9a4a;
+  padding: 0 18px 48px 18px;
+  max-height: 78vh;
   overflow-y: auto;
-  padding: 0 18px 40px;
-  box-shadow: 0 -10px 50px rgba(0,0,0,0.7);
-  transform: translateY(100%);
-  transition: transform 0.32s cubic-bezier(0.4,0,0.2,1);
   -webkit-overflow-scrolling: touch;
+  box-shadow: 0 -12px 48px rgba(0,0,0,0.75);
+  transform: translateY(110%);
+  transition: transform 0.3s ease;
+  will-change: transform;
+  display: block;        /* Her zaman DOM'da, sadece transform ile gizlenir */
+  pointer-events: none;
 }
-#globalSheet.open {
-  display: block;
+#mobSheet.show {
   transform: translateY(0);
+  pointer-events: auto;
 }
-#globalSheet .sheet-handle {
-  width: 44px; height: 5px;
-  background: #4a7a4a;
+#mobSheetBg {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 99998;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+#mobSheetBg.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.msHandle {
+  width: 42px; height: 5px;
+  background: #4a9a4a;
   border-radius: 3px;
-  margin: 14px auto 18px;
+  margin: 14px auto 16px;
 }
-#globalSheet .sheet-title {
+.msTitle {
   font-family: 'Fredoka One', cursive;
-  font-size: 17px;
+  font-size: 16px;
   color: #a0d8a0;
   margin-bottom: 10px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #3a5a3a;
+  border-bottom: 1px solid #2a4a2a;
 }
-#globalSheet .sheet-row {
+.msRow {
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
   font-size: 12.5px;
   color: #8ab88a;
-  padding: 5px 0;
+  padding: 6px 0;
   font-weight: 700;
-  border-bottom: 1px solid #2a3a2a;
+  border-bottom: 1px solid #1a2a1a;
 }
-#globalSheet .sheet-row span:last-child {
-  color: #c0e8c0;
-  text-align: right;
-  max-width: 55%;
+.msRow span:first-child { color: #6a9a6a; flex-shrink: 0; }
+.msRow span:last-child { color: #c0e8c0; text-align: right; }
+.msNote {
+  font-size: 11.5px; color: #7aaa7a; line-height: 1.6;
+  background: #142014; border-radius: 8px;
+  padding: 10px 12px; margin-top: 10px;
 }
-#globalSheet .sheet-note {
-  margin-top: 10px;
-  font-size: 11.5px;
-  color: #7aaa7a;
-  line-height: 1.6;
-  background: #162416;
-  border-radius: 8px;
-  padding: 10px 12px;
+.msReaktifBtn {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; margin-top: 14px; padding: 13px 14px;
+  background: #2d4a2d; border: 1.5px solid #4a9a4a;
+  border-radius: 12px; color: #80f080;
+  font-family: 'Nunito', sans-serif; font-size: 14px;
+  font-weight: 800; cursor: pointer; text-align: left;
 }
-#globalSheet .sheet-reaktif-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  margin-top: 14px;
-  padding: 12px 14px;
-  background: #2d4a2d;
-  border: 1.5px solid #4a9a4a;
-  border-radius: 12px;
-  color: #80e080;
-  font-family: 'Nunito', sans-serif;
-  font-size: 13px;
-  font-weight: 800;
-  cursor: pointer;
-  text-align: left;
-}
-#globalSheet .sheet-close-btn {
-  display: block;
-  width: 100%;
-  margin-top: 10px;
-  padding: 12px;
-  background: #162416;
-  border: 1.5px solid #3a5a3a;
-  border-radius: 12px;
-  color: #6a9a6a;
-  font-family: 'Nunito', sans-serif;
-  font-size: 13px;
-  font-weight: 800;
-  cursor: pointer;
+.msCloseBtn {
+  display: block; width: 100%; margin-top: 10px;
+  padding: 13px; background: #142014;
+  border: 1.5px solid #2a4a2a; border-radius: 12px;
+  color: #6a8a6a; font-family: 'Nunito', sans-serif;
+  font-size: 13px; font-weight: 800; cursor: pointer;
   text-align: center;
 }
 </style>
 </head>
 <body>
+
+<!-- MOBİL BOTTOM SHEET ALTYAPISI -->
+<div id="mobSheetBg" onclick="closeMobileSheet()"></div>
+<div id="mobSheet">
+  <div class="msHandle"></div>
+  <div id="mobSheetBody"></div>
+</div>
 
 <!-- Hamburger (mobil) -->
 <button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Menü">
@@ -884,15 +873,7 @@ body {
 <!-- Sidebar overlay -->
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-<!-- Tooltip backdrop (mobil bottom sheet arkası) -->
-<div class="tooltip-backdrop" id="tooltipBackdrop" onclick="closeGlobalSheet()"></div>
 
-<!-- Global Mobil Bottom Sheet -->
-<div id="globalSheet">
-  <div class="sheet-handle"></div>
-  <div id="sheetContent"></div>
-  <button class="sheet-close-btn" onclick="closeGlobalSheet()">✕ Kapat</button>
-</div>
 
 <!-- PWA Install Banner -->
 <div class="install-banner" id="installBanner">
@@ -4311,7 +4292,7 @@ function injectReaktifButtons() {
       const btn = document.createElement('button');
       btn.className = 'tt-reaktif-btn';
       btn.innerHTML = '📖 Reaktif Kılavuzunda Gör →';
-      btn.onclick = (e) => { e.stopPropagation(); closeGlobalSheet(); goToReaktif(blkId); };
+      btn.onclick = (e) => { e.stopPropagation(); closeMobileSheet(); goToReaktif(blkId); };
       tip.appendChild(btn);
     });
   });
@@ -4373,6 +4354,76 @@ function calcHA() {
   sinif.textContent = s;
 }
 
+// ════ MOBİL BOTTOM SHEET ════
+
+function openMobileSheet(chip) {
+  const tip = chip.querySelector('.chem-tooltip');
+  if (!tip) return;
+
+  let html = '<div class="msTitle">' + (tip.querySelector('.tt-title')?.innerHTML || '') + '</div>';
+
+  tip.querySelectorAll('.tt-row').forEach(row => {
+    const cells = row.querySelectorAll('span');
+    if (cells.length >= 2) {
+      html += '<div class="msRow"><span>' + cells[0].innerHTML + '</span><span>' + cells[1].innerHTML + '</span></div>';
+    }
+  });
+
+  const note = tip.querySelector('.tt-note');
+  if (note) html += '<div class="msNote">' + note.innerHTML + '</div>';
+
+  const panel = chip.closest('.analysis-panel');
+  const blkId = panel ? panelToReaktif[panel.id] : null;
+  if (blkId) {
+    html += '<button class="msReaktifBtn" onclick="closeMobileSheet();goToReaktif(\'' + blkId + '\')">📖 Reaktif Kılavuzunda Gör →</button>';
+  }
+  html += '<button class="msCloseBtn" onclick="closeMobileSheet()">✕ Kapat</button>';
+
+  document.getElementById('mobSheetBody').innerHTML = html;
+
+  const sheet = document.getElementById('mobSheet');
+  const bg    = document.getElementById('mobSheetBg');
+
+  // Önce show class'ını ekle, transisyon CSS halleder
+  sheet.classList.add('show');
+  bg.classList.add('show');
+  // Sheet'i en üste getir (scroll sıfırla)
+  sheet.scrollTop = 0;
+}
+
+function closeMobileSheet() {
+  document.getElementById('mobSheet').classList.remove('show');
+  document.getElementById('mobSheetBg').classList.remove('show');
+}
+
+// Chip tap
+document.addEventListener('click', function(e) {
+  if (window.innerWidth > 900) return; // masaüstünde hover çalışsın
+
+  // Kapat butonu
+  if (e.target.closest('.msCloseBtn') || e.target.id === 'mobSheetBg') {
+    closeMobileSheet();
+    return;
+  }
+  // Sheet içi — scroll için geçiş sağla
+  if (e.target.closest('#mobSheet')) return;
+
+  const chip = e.target.closest('.chem-chip');
+  if (!chip) {
+    closeMobileSheet();
+    return;
+  }
+
+  e.preventDefault();
+  e.stopPropagation();
+  // Zaten açıksa kapat, değilse aç
+  if (document.getElementById('mobSheet').classList.contains('show')) {
+    closeMobileSheet();
+  } else {
+    openMobileSheet(chip);
+  }
+}, true);
+
 // ─── MOBİL SİDEBAR ───
 
 function toggleSidebar() {
@@ -4411,128 +4462,7 @@ function showAnalysis(id) {
   closeSidebar();
 }
 
-// ─── GLOBAL MOBİL BOTTOM SHEET ───
 
-function openGlobalSheet(chip) {
-  const tip = chip.querySelector('.chem-tooltip');
-  if (!tip) return;
-
-  // Tooltip içeriğini oku ve sheet'e taşı
-  const title = tip.querySelector('.tt-title')?.innerHTML || '';
-  const rows  = [...tip.querySelectorAll('.tt-row')].map(r => r.outerHTML).join('');
-  const note  = tip.querySelector('.tt-note')?.innerHTML || '';
-  const reaktifBlk = chip.closest('.analysis-panel') ? panelToReaktif[chip.closest('.analysis-panel').id] : null;
-
-  let html = '';
-  if (title) html += `<div class="sheet-title">${title}</div>`;
-  if (rows)  html += rows.replace(/class="tt-row"/g, 'class="sheet-row"');
-  if (note)  html += `<div class="sheet-note">${note}</div>`;
-  if (reaktifBlk) {
-    html += `<button class="sheet-reaktif-btn" onclick="closeGlobalSheet();goToReaktif('${reaktifBlk}')">📖 Reaktif Kılavuzunda Gör →</button>`;
-  }
-
-  document.getElementById('sheetContent').innerHTML = html;
-
-  const sheet = document.getElementById('globalSheet');
-  const backdrop = document.getElementById('tooltipBackdrop');
-  sheet.style.display = 'block';
-  // Animasyonu tetikle (display:block sonrası kısa gecikme)
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      sheet.classList.add('open');
-      backdrop.classList.add('active');
-    });
-  });
-}
-
-function closeGlobalSheet() {
-  const sheet = document.getElementById('globalSheet');
-  const backdrop = document.getElementById('tooltipBackdrop');
-  sheet.classList.remove('open');
-  backdrop.classList.remove('active');
-  setTimeout(() => { sheet.style.display = 'none'; }, 320);
-}
-
-// Eski fonksiyon adıyla uyumluluk
-function closeAllTooltips() { closeGlobalSheet(); }
-
-document.addEventListener('click', function(e) {
-  const isMobile = window.innerWidth <= 768;
-
-  // Sheet kapat butonu
-  if (e.target.closest('.sheet-close-btn') || e.target.closest('#tooltipBackdrop')) {
-    closeGlobalSheet();
-    return;
-  }
-
-  // Sheet içine tıklama — kapat (reaktif btn hariç)
-  if (e.target.closest('#globalSheet') && !e.target.closest('.sheet-reaktif-btn') && !e.target.closest('.sheet-close-btn')) {
-    return; // Sheet içinde scroll/okuma için kapat
-  }
-
-  // Chip tıklaması
-  const chip = e.target.closest('.chem-chip');
-  if (chip && isMobile) {
-    e.preventDefault();
-    e.stopPropagation();
-    // Zaten açıksa kapat
-    if (document.getElementById('globalSheet').classList.contains('open')) {
-      closeGlobalSheet();
-      return;
-    }
-    openGlobalSheet(chip);
-    return;
-  }
-
-  // Dışarı tıklama
-  if (!e.target.closest('#globalSheet') && !e.target.closest('.chem-chip')) {
-    if (document.getElementById('globalSheet').classList.contains('open')) {
-      closeGlobalSheet();
-    }
-  }
-}, true);
-
-// ─── PWA INSTALL ───
-
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
-  const banner = document.getElementById('installBanner');
-  if (banner) banner.style.display = 'flex';
-});
-
-document.getElementById('installBtn')?.addEventListener('click', async () => {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  document.getElementById('installBanner').style.display = 'none';
-});
-
-window.addEventListener('appinstalled', () => {
-  document.getElementById('installBanner').style.display = 'none';
-  deferredPrompt = null;
-});
-
-// ─── SERVICE WORKER KAYDETTME ───
-
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then(reg => console.log('SW kayıtlı:', reg.scope))
-      .catch(err => console.log('SW hatası:', err));
-  });
-}
-
-// ─── BAŞLANGIÇ ───
-
-window.addEventListener('DOMContentLoaded', () => {
-  calcOM(); calcN(); calcKDK(); calcHA();
-  injectReaktifButtons();
-});
-
-// Masaüstünde normal hover tooltip çalışmaya devam eder
 
 
 </script>
