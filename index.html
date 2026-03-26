@@ -666,24 +666,65 @@ body {
   }
   .step-info { width: 100% !important; }
 
-  /* Chem-chip tooltip: altında açılsın */
+  /* Chem-chip tooltip: mobilde fixed bottom sheet */
   .chem-tooltip {
+    position: fixed !important;
     left: 0 !important;
     right: 0 !important;
-    top: calc(100% + 8px) !important;
-    transform: none !important;
-    width: auto !important;
-    max-width: 100%;
+    bottom: 0 !important;
+    top: auto !important;
+    transform: translateY(100%) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 70vh;
+    overflow-y: auto;
+    border-radius: 20px 20px 0 0 !important;
+    border: none !important;
+    border-top: 2px solid #4a7a4a !important;
+    z-index: 9999 !important;
+    padding: 20px 18px 32px !important;
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.55) !important;
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1) !important;
   }
+  /* Bottom sheet handle çizgisi */
   .chem-tooltip::before {
-    right: auto !important;
-    left: 20px !important;
-    top: -14px !important;
+    content: '' !important;
+    position: sticky !important;
+    display: block !important;
+    width: 40px; height: 4px !important;
+    background: #4a7a4a !important;
+    border-radius: 2px !important;
+    margin: -10px auto 14px !important;
+    border: none !important;
+    top: 0; left: 50% !important;
     transform: none !important;
-    border-right-color: transparent !important;
-    border-bottom-color: #4a7a4a;
-    border-width: 7px;
+    right: auto !important;
   }
+  /* Açıkken görünür ve yukarı kayar */
+  .chem-chip.tap-open .chem-tooltip {
+    transform: translateY(0) !important;
+  }
+  /* Hover tooltip masaüstünde kalıyor, mobilde devre dışı */
+  .chem-chip:hover .chem-tooltip {
+    transform: translateY(100%) !important;
+    display: none !important;
+  }
+  .chem-chip.tap-open .chem-tooltip {
+    display: block !important;
+    transform: translateY(0) !important;
+  }
+
+  /* Tooltip arkasında karartma */
+  .tooltip-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 9998;
+    backdrop-filter: blur(1px);
+  }
+  .tooltip-backdrop.active { display: block; }
+
 
   /* Tablolar scroll */
   .titr-table { font-size: 11px; }
@@ -796,6 +837,9 @@ body {
 
 <!-- Sidebar overlay -->
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- Tooltip backdrop (mobil bottom sheet arkası) -->
+<div class="tooltip-backdrop" id="tooltipBackdrop" onclick="closeAllTooltips()"></div>
 
 <!-- PWA Install Banner -->
 <div class="install-banner" id="installBanner">
@@ -4214,10 +4258,11 @@ function injectReaktifButtons() {
       const btn = document.createElement('button');
       btn.className = 'tt-reaktif-btn';
       btn.innerHTML = '📖 Reaktif Kılavuzunda Gör →';
-      btn.onclick = (e) => { e.stopPropagation(); goToReaktif(blkId); };
+      btn.onclick = (e) => { e.stopPropagation(); closeAllTooltips(); goToReaktif(blkId); };
       tip.appendChild(btn);
     });
   });
+  injectTooltipCloseBtns();
 }
 
 // ─── HESAP MAKİNESİ ───
@@ -4314,24 +4359,45 @@ function showAnalysis(id) {
   closeSidebar();
 }
 
-// ─── MOBIL TOOLTIP (tap ile aç/kapat) ───
+// ─── MOBİL TOOLTIP BOTTOM SHEET ───
+
+function closeAllTooltips() {
+  document.querySelectorAll('.chem-chip.tap-open').forEach(c => c.classList.remove('tap-open'));
+  document.getElementById('tooltipBackdrop')?.classList.remove('active');
+}
 
 document.addEventListener('click', function(e) {
   const chip = e.target.closest('.chem-chip');
-  if (!chip) {
-    // Dışarı tıklayınca kapat
-    document.querySelectorAll('.chem-chip.tap-open').forEach(c => c.classList.remove('tap-open'));
+  const isMobile = window.innerWidth <= 768;
+
+  // Reaktif butonuna tıklandıysa tooltip'i kapat sonra navigate et
+  if (e.target.closest('.tt-reaktif-btn')) {
+    closeAllTooltips();
     return;
   }
-  // Tooltip butonu tıklandıysa sadece orayı işle
-  if (e.target.closest('.tt-reaktif-btn')) return;
 
-  const isMobile = window.innerWidth <= 768;
+  // Tooltip içine tıklandıysa kapat (close btn)
+  if (e.target.closest('.tt-close-btn')) {
+    closeAllTooltips();
+    return;
+  }
+
+  if (!chip) {
+    if (!e.target.closest('.chem-tooltip')) {
+      closeAllTooltips();
+    }
+    return;
+  }
+
   if (isMobile) {
     e.preventDefault();
+    e.stopPropagation();
     const isOpen = chip.classList.contains('tap-open');
-    document.querySelectorAll('.chem-chip.tap-open').forEach(c => c.classList.remove('tap-open'));
-    if (!isOpen) chip.classList.add('tap-open');
+    closeAllTooltips();
+    if (!isOpen) {
+      chip.classList.add('tap-open');
+      document.getElementById('tooltipBackdrop')?.classList.add('active');
+    }
   }
 }, true);
 
@@ -4373,7 +4439,25 @@ if ('serviceWorker' in navigator) {
 window.addEventListener('DOMContentLoaded', () => {
   calcOM(); calcN(); calcKDK(); calcHA();
   injectReaktifButtons();
+  injectTooltipCloseBtns();
 });
+
+// Tooltip'lere mobil için "Kapat" butonu ekle
+function injectTooltipCloseBtns() {
+  document.querySelectorAll('.chem-tooltip').forEach(tip => {
+    if (tip.querySelector('.tt-close-btn')) return;
+    const btn = document.createElement('button');
+    btn.className = 'tt-close-btn';
+    btn.innerHTML = '✕ Kapat';
+    btn.style.cssText = `
+      display:block; width:100%; margin-top:14px; padding:10px;
+      background:#2a4a2a; border:1.5px solid #4a7a4a; border-radius:10px;
+      color:#80c080; font-family:'Nunito',sans-serif; font-weight:800;
+      font-size:13px; cursor:pointer; text-align:center;
+    `;
+    tip.appendChild(btn);
+  });
+}
 
 // Mobil tooltip CSS: .tap-open .chem-tooltip → display block
 const mobileStyle = document.createElement('style');
