@@ -1,4 +1,4 @@
-const CACHE = 'toprak-analiz-v4';
+const CACHE = 'toprak-analiz-v1';
 const ASSETS = [
   './',
   './index.html',
