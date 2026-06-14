@@ -698,9 +698,10 @@ body {
     padding-bottom: 8px;
   }
 
-  /* Install banner */
-  .install-banner {
+  /* Install banner: mobilde sadece JS gösterirse görünür, bottom-nav'ın üstünde durur */
+  .install-banner.show {
     display: flex !important;
+    bottom: 64px;
   }
 }
 
@@ -714,9 +715,10 @@ body {
   padding: 14px 16px;
   align-items: center;
   gap: 12px;
-  z-index: 999;
+  z-index: 998;
   box-shadow: 0 -4px 24px rgba(0,0,0,0.4);
 }
+.install-banner.show { display: flex; }
 .install-banner img { width: 42px; height: 42px; border-radius: 10px; }
 .install-banner-txt { flex: 1; }
 .install-banner-txt b { color: #a0d890; font-size: 13px; display: block; }
@@ -745,7 +747,7 @@ body {
   background: #1a2a1a;
   border-top: 1.5px solid #2d4a2d;
   padding: 6px 4px env(safe-area-inset-bottom);
-  z-index: 300;
+  z-index: 999;
   grid-template-columns: repeat(5, 1fr);
   gap: 2px;
 }
@@ -766,9 +768,7 @@ body {
 .bottom-nav-item.active { color: #80d080; background: #2a3a2a; }
 @media (max-width: 768px) {
   .bottom-nav { display: grid; }
-  /* Main gets padding for bottom nav */
   .main { padding-bottom: 70px; }
-  /* Hide install banner when bottom-nav visible */
 }
 /* ════ MOBİL BOTTOM SHEET (TEMİZ VERSIYON) ════ */
 #mobSheet {
@@ -897,7 +897,7 @@ body {
     <span>Çevrimdışı çalışır · Ana ekrana ekle</span>
   </div>
   <button class="install-btn" id="installBtn">Yükle</button>
-  <button class="install-close" onclick="document.getElementById('installBanner').style.display='none'">✕</button>
+  <button class="install-close" onclick="closeInstallBanner()">✕</button>
 </div>
 
 <!-- Bottom Navigation (mobil hızlı erişim) -->
@@ -4574,6 +4574,42 @@ function injectPrintButtons() {
     btn.style.cssText = 'margin-left:auto;background:#2d4a2d;border:1.5px solid #4a9a4a;border-radius:10px;padding:7px 11px;color:#a0d890;font-size:15px;cursor:pointer;flex-shrink:0;';
     btn.onclick = () => printPanel(panel.id);
     topbar.appendChild(btn);
+  });
+}
+
+// ─── PWA INSTALL ───
+
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBanner')?.classList.add('show');
+});
+
+document.getElementById('installBtn')?.addEventListener('click', async () => {
+  if (!deferredPrompt) { closeInstallBanner(); return; }
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  closeInstallBanner();
+});
+
+function closeInstallBanner() {
+  document.getElementById('installBanner')?.classList.remove('show');
+}
+
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  closeInstallBanner();
+});
+
+// ─── SERVICE WORKER KAYDI ───
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('SW kayıtlı:', reg.scope))
+      .catch(err => console.log('SW hatası:', err));
   });
 }
 
